@@ -3,6 +3,7 @@ pipeline {
     stages {
         stage('Install SDK'){
             steps {
+                sh 'apt install wget'
                 sh 'cd ~'
                 sh 'wget https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.410/dotnet-sdk-8.0.410-linux-x64.tar.gz'
                 sh 'DOTNET_FILE=dotnet-sdk-8.0.410-linux-x64.tar.gz'
