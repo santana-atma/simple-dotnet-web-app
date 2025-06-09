@@ -1,13 +1,14 @@
 pipeline {
     agent any
     environment {
-    PATH = "/usr/local/share/dotnet:$PATH"
+    PATH = '/usr/local/share/dotnet:${env.PATH}'
        }
     stages {
         stage('Build') { 
             steps {
-                bash 'dotnet restore' 
-                bash 'dotnet build --no-restore' 
+                echo 'PATH is: ${env.PATH}'
+                sh 'dotnet restore' 
+                sh 'dotnet build --no-restore' 
             }
         }
     }
