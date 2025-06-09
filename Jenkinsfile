@@ -14,7 +14,11 @@ pipeline {
         }
         stage('Test') { 
             steps {
-                sh '/usr/local/share/dotnet/dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
+
+                sh '''
+                    export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+                    /usr/local/share/dotnet/dotnet test --no-build --no-restore --collect "XPlat Code Coverage"
+                '''
             }
             post {
                 always {
@@ -24,7 +28,10 @@ pipeline {
         }
         stage('Deliver') { 
             steps {
-                sh '/usr/local/share/dotnet/dotnet publish SimpleWebApi --no-restore -o published' 
+                sh '''
+                    export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+                    /usr/local/share/dotnet/dotnet publish SimpleWebApi ---self-contained -r linux-x64 -no-restore -o published
+                '''
             }
             post {
                 success {
