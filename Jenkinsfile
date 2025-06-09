@@ -1,22 +1,35 @@
+//Jenkinsfile (Declarative Pipeline)
 pipeline {
     agent any
     stages {
-        stage('Install SDK'){
+        stage('Build') {
             steps {
-                sh 'apt install wget'
-                sh 'cd ~'
-                sh 'wget https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.410/dotnet-sdk-8.0.410-linux-x64.tar.gz'
-                sh 'DOTNET_FILE=dotnet-sdk-8.0.410-linux-x64.tar.gz'
-                sh 'export DOTNET_ROOT=$(pwd)/.dotnet'
-                sh 'mkdir -p "$DOTNET_ROOT" && tar zxf "$DOTNET_FILE" -C "$DOTNET_ROOT"'
-                sh 'export PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools'
-
+                sh 'echo "Building SDK"'
+                sh '''
+                    export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+                    /usr/local/share/dotnet/dotnet restore
+                    /usr/local/share/dotnet/dotnet build --no-restore
+                '''
             }
         }
-        stage('Build') { 
+        stage('Test') { 
             steps {
-                sh 'dotnet restore' 
-                sh 'dotnet build --no-restore' 
+                sh '/usr/local/share/dotnet/dotnet test --no-build --no-restore --collect "XPlat Code Coverage"'
+            }
+            post {
+                always {
+                    recordCoverage(tools: [[parser: 'COBERTURA', pattern: '**/*.xml']], sourceDirectories: [[path: 'SimpleWebApi.Test/TestResults']])
+                }
+            }
+        }
+        stage('Deliver') { 
+            steps {
+                sh '/usr/local/share/dotnet/dotnet publish SimpleWebApi --no-restore -o published' 
+            }
+            post {
+                success {
+                    archiveArtifacts 'published/*.*'
+                }
             }
         }
     }
